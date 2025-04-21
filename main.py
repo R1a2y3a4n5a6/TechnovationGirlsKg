@@ -2,7 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import sqlite3
 
-bot = telebot.TeleBot("7544500117:AAHF5K2iilzTfq8zr9K9jzBIKle4co_VE9A")
+bot = telebot.TeleBot("7746129266:AAHR6xOsvcHlK50RV13fhhfsYc4Vxp-J_aI")
 
 
 # Получение данных о секциях
