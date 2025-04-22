@@ -1,209 +1,185 @@
 import sqlite3
 
 
-def create_db():
-    conn = sqlite3.connect('questions.db')
-    cursor = conn.cursor()
+def create_database():
+    with sqlite3.connect('questions.db') as conn:
+        cursor = conn.cursor()
 
-    # Создаем таблицы
-    cursor.execute('''CREATE TABLE IF NOT EXISTS sections (
-                        id INTEGER PRIMARY KEY,
-                        name TEXT NOT NULL)''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sections (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                section_name TEXT UNIQUE
+            )
+        ''')
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS questions (
-                        id INTEGER PRIMARY KEY,
-                        question_text TEXT NOT NULL,
-                        answer_text TEXT NOT NULL,
-                        section_id INTEGER,
-                        FOREIGN KEY (section_id) REFERENCES sections(id))''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS questions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question_text TEXT,
+                answer_text TEXT,
+                section_id INTEGER,
+                FOREIGN KEY(section_id) REFERENCES sections(id)
+            )
+        ''')
 
-    conn.commit()
-    conn.close()
+        conn.commit()
 
 
 def insert_data():
-    conn = sqlite3.connect('questions.db')
-    cursor = conn.cursor()
-
-    # Вставляем данные о секциях, если их ещё нет
     sections = [
-        "Регистрация на сайте",
+        "Регистрация",
         "Командная работа",
-        "Сроки проекта",
-        "Учебные материалы",
+        "Сроки",
+        "Куррикулум",
         "Создание видео"
     ]
 
-    for section in sections:
-        cursor.execute("SELECT * FROM sections WHERE name=?", (section,))
-        if cursor.fetchone() is None:
-            cursor.execute("INSERT INTO sections (name) VALUES (?)", (section,))
-
-    conn.commit()
-
-    # Получаем id секций
-    cursor.execute("SELECT id FROM sections WHERE name='Регистрация на сайте'")
-    registration_id = cursor.fetchone()[0]
-
-    cursor.execute("SELECT id FROM sections WHERE name='Командная работа'")
-    teamwork_id = cursor.fetchone()[0]
-
-    cursor.execute("SELECT id FROM sections WHERE name='Сроки проекта'")
-    deadline_id = cursor.fetchone()[0]
-
-    cursor.execute("SELECT id FROM sections WHERE name='Учебные материалы'")
-    curriculum_id = cursor.fetchone()[0]
-
-    cursor.execute("SELECT id FROM sections WHERE name='Создание видео'")
-    video_id = cursor.fetchone()[0]
-
-    # Вставляем вопросы и ответы
     questions_answers = [
         ("Что такое Technovation girls challenge?",
          "Technovation girls challenge — это бесплатная программа для девочек в возрасте от 8 до 18 лет, которая проводится ежегодно с октября по апрель. Работая в командах, девочки находят социальную проблему в своем обществе и создают мобильное приложение, чтобы помочь её решить.",
-         registration_id),
+         "Регистрация"),
 
         ("Как пройти регистрацию?",
          "Зайдите на сайт Technovation Girls и нажмите «Join Us». Выберите свою роль: участница, наставник, родитель или координатор. Заполните форму регистрации, указав необходимые данные. Найдите или соберите команду и приступайте к работе над проектом.",
-         registration_id),
+         "Регистрация"),
 
         ("Как зарегистрироваться участнику?",
          "Чтобы зарегистрироваться участнице Technovation Girls, зайдите на сайт, нажмите 'Join Us', выберите роль 'Student', создайте аккаунт, указав имя, возраст, страну и контакты, найдите или создайте команду с наставником и начните работу над проектом.",
-         registration_id),
+         "Регистрация"),
 
         ("Как зарегистрироваться ментору?",
          "Чтобы зарегистрироваться наставнику (Mentor) в Technovation Girls, зайдите на сайт, нажмите 'Join Us', выберите роль 'Mentor', создайте аккаунт, указав имя, страну и контактные данные, пройдите проверку и найдите команду для наставничества.",
-         registration_id),
+         "Регистрация"),
 
         ("Нужно ли создавать новый аккаунт для регистрации?",
          "Да, для каждой роли нужно создавать новый аккаунт. Выбирайте роль на сайте и регистрируйтесь.",
-         registration_id),
+         "Регистрация"),
 
         ("Как получить родительское соглашение?",
          "После регистрации участника на сайте Technovation Girls, родителю на электронную почту приходит уведомление о том, что его ребёнок зарегистрировался. В письме будет ссылка для подтверждения и подписания родительского соглашения.",
-         registration_id),
+         "Регистрация"),
 
         ("Когда дедлайн регистрации?",
          "Основной срок регистрации — 17 марта, но для вашего региона он до 10 февраля.",
-         registration_id),
+         "Регистрация"),
 
         ("Как создать команду?",
          "Чтобы создать или присоединиться к команде, нужно завершить регистрацию на сайте, перейти в профиль и выбрать опцию 'Создать свою команду' или 'Найти команду'.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Как найти ментора?",
          "Найти ментора можно: 1) на сайте, отправив ему заявку; 2) пригласить своего знакомого старше 18 лет стать ментором; 3) написать человеку в соцсетях и предложить стать ментором.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Можно ли участвовать без команды?",
          "Участвовать без команды нельзя, но можно, если в команде будет от 2 до 5 человек.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Сколько менторов может быть в одной команде?",
          "Ограничений на количество менторов нет.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Кто такой ментор?",
          "Ментор — это тот человек, который наставляет вас в течение проекта, даёт советы и помогает с определённой работой, например, анализировать ваш бизнес-план.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Могут ли мои знакомые стать ментором?",
          "Да, конечно. Вы можете пригласить своих знакомых старше 18 лет стать вашим ментором.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Можно ли работать с командой онлайн?",
          "Да, вы можете работать со своей командой онлайн, связываясь через Zoom, Google Meet и другие платформы, а также общаясь в письменном формате.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Обязательно ли выбирать девочек, которые живут рядом?",
          "Нет, это не обязательно. Вы можете пригласить в свою команду девочек из других городов и регионов.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Можно ли быть из разных регионов?",
          "Да, конечно.",
-         teamwork_id),
+         "Командная работа"),
 
         ("Когда начинается регистрация?",
          "11 октября 2024",
-         deadline_id),
+         "Сроки"),
 
         ("Как долго продолжается период формирования команды?",
          "Формирование команды можно начинать сразу после регистрации и продолжать до крайнего срока подачи проекта. Однако лучше собрать команду как можно раньше, чтобы успеть проработать идею и подготовить проект.",
-         deadline_id),
+         "Сроки"),
 
         ("Как зарегистрироваться и найти наставника?",
          "Зарегистрируйтесь на сайте, выбрав роль 'Student'. Найти наставника можно среди учителей, знакомых специалистов или через организаторов программы.",
-         deadline_id),
+         "Сроки"),
 
         ("Когда участники могут начать работать над проектом?",
          "Участники могут начать работу над проектом сразу после регистрации и формирования команды, как только откроется сезон программы. Обычно это происходит в начале января.",
-         deadline_id),
+         "Сроки"),
 
         ("Какие даты рекомендуются для начала работы над проектом?",
          "Рекомендуется начинать работу над проектом сразу после регистрации и формирования команды, желательно в январе. Это даст достаточно времени для изучения материалов, разработки идеи и создания прототипа до крайнего срока подачи проекта.",
-         deadline_id),
+         "Сроки"),
 
         ("Когда заканчивается период разработки проекта?",
          "Период разработки проекта заканчивается в день крайнего срока подачи — обычно это апрель. В 2025 году финальный срок подачи проекта 5 мая.",
-         deadline_id),
+         "Сроки"),
 
         ("Каковы сроки подачи финальных заявок?",
          "Крайний срок подачи финальных заявок на участие в Technovation Girls в 2025 году — 5 мая 2025 года в 17:00 по тихоокеанскому времени. Это соответствует 6 мая в 4:00 по времени Бишкек.",
-         deadline_id),
+         "Сроки"),
 
         ("Когда пройдет этап оценивания проектов?",
          "Этап оценивания проектов пройдет с 8 мая по 23 июня 2025 года, а финалисты будут объявлены в июле 2025.",
-         deadline_id),
+         "Сроки"),
 
         ("Когда будут объявлены результаты?",
          "Результаты будут объявлены в июле 2025 года на финальном мероприятии Global Celebration.",
-         deadline_id),
+         "Сроки"),
 
         ("Какова цель первого этапа работы над проектом?",
          """Цель первого этапа работы над проектом – понять проблему, которую должно решить приложение, придумать идею и спланировать её реализацию. Подробное руководство можно найти на официальном сайте Technovation. https://technovationchallenge.org/ —официальный сайт Tecnovation Girls""",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Какие темы охватывает куррикулум?",
          """Темы куррикулума – включают программирование, дизайн, тестирование и бизнес-аспекты, такие как создание презентации для инвесторов. Более подробную информацию можно найти в разделе "Exploring Mobile App Builders" на сайте Technovation. https://technovationchallenge.org/courses/senior-division-curriculum/ —ссылка на куррикулум""",
-         curriculum_id),
+         "Куррикулум"),
 
         ("С чего начать при изучении куррикулума?",
          "Рекомендуется начать с определения проблемы, затем перейти к разработке решения, изучению основ программирования и тестированию идеи. Пошаговое руководство доступно на сайте Technovation.",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Какие навыки можно развить, проходя куррикулум?",
          "Навыки программирования, командной работы, решения проблем, проектирования и презентации идей. Истории участниц и их опыт можно посмотреть на YouTube-канале Technovation Girls.",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Какие инструменты рекомендуются для создания проекта?",
          """Для простых приложений можно использовать MIT App Inventor или Thunkable. Сравнение этих платформ представлено в статье на Medium. https://thunkable.com/ —танкбл, https://appinventor.mit.edu/ —мит апп""",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Как решать технические трудности?",
          """При возникновении проблем стоит сначала попытаться самостоятельно найти решение, затем обратиться к онлайн-ресурсам или наставникам. Форумы, такие как сообщество MIT App Inventor, могут быть полезны.
 
 https://community.appinventor.mit.edu/ —форум про обсуждение mit арр Inventor""",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Как оценить, что все требования куррикулума выполнены?",
          "Рекомендуется использовать чек-листы и руководства, предоставленные на официальном сайте Technovation, чтобы убедиться в наличии всех необходимых компонентов проекта.",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Существуют ли видео-уроки для изучения отдельных тем?",
          """Да, на YouTube-канале Technovation Girls доступны видео-уроки по различным темам. Например, серия "Technovation Girls Video Diaries" может быть полезна.
 https://www.youtube.com/c/TechnovationGirls —ютуб акк от Technovation 
 https://www.youtube.com/@technovationkyrgyzstan5490 — ютуб акк от Kyrgyzstan Tecnovation 
 https://www.youtube.com/watch?v=SIK3Dz-coeQ —вспомогательное видео на ютуб (на англиском)""",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Есть ли рекомендации по использованию куррикулума для подготовки к конкурсу?",
          "Рекомендуется следовать всем шагам куррикулума, активно работать в команде, тестировать приложение и подготовить качественную презентацию. Опыт предыдущих участников можно увидеть на YouTube-канале Technovation Girls.",
-         curriculum_id),
+         "Куррикулум"),
 
         ("Как куррикулум помогает в разработке приложения или AI-инструмента?",
          """он предоставляет пошаговое руководство, обучает важным навыкам и помогает создать работающее приложение, которое можно представить на конкурсе. Дополнительные ресурсы доступны на официальном сайте Technovation.
 ( https://technovationchallenge.org/ )""",
-         curriculum_id),
+         "Куррикулум"),
 
         (
             "Как снять питч-видео?",
@@ -214,7 +190,7 @@ https://www.youtube.com/watch?v=SIK3Dz-coeQ —вспомогательное в
 • Показать, как ваше приложение решает эту проблему.
 
 https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/lessons/outline-pitch-and-technical-videos/""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -222,7 +198,7 @@ https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/
             """Техническое видео также длится не более 3 минут и загружено на YouTube. В нем следует продемонстрировать, как работает ваше приложение, объяснить, как вы его кодировали, рассказать об отзывах пользователей и о том, какие функции вы планируете реализовать в будущем, полностью функции вашего продукта. 
 
  https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -230,7 +206,7 @@ https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/
             """Оба видео — питч и техническое — должны длиться не более 3 минут.
 
 https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -248,7 +224,7 @@ https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.c
 • Объяснить, как ваше приложение оказывает положительное влияние на пользователей.
 
 https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -263,7 +239,7 @@ https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.c
 
 https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com
 """,
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -274,7 +250,7 @@ https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.c
 В питч-видео рассказывается о проблеме и решении, в техническом — о процессе разработки и функционале приложения.
 
 https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/lessons/recording-videos/""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -284,7 +260,7 @@ https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/
 Советы по записи видео https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/lessons/recording-videos/
 
 Советы по редактированию. https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/lessons/editing-videos/""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -293,13 +269,13 @@ https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/
 Если вы не хотите показывать свое лицо, можно использовать другие способы представления, например, слайды, анимации или демонстрацию экрана.
 
 Но желательно: добавить свое лицо, и показать лица всей командой.""",
-            video_id
+            "Создание видео"
         ),
 
         (
             "Можно ли написать сценарий через ChatGPT?",
             "Да, вы можете использовать ChatGPT или другие инструменты для написания сценария. Однако убедитесь, что финальный текст отражает вашу индивидуальность и соответствует требованиям программы.",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -309,7 +285,7 @@ https://technovationchallenge.org/ru/courses/technovation-girls-core-curriculum/
 Если вы говорите на другом языке, обязательно добавьте английские субтитры. Если судьи не пойдут вашу речь, то они будут смотреть на субтитры .
 
 https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         ),
 
         (
@@ -317,28 +293,40 @@ https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.c
             """Да, если в видео используется неанглийский язык, необходимо добавить английские субтитры.
 
 Рекомендуется включать английские субтитры, даже если в видео используется английский язык. https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         ),
 
         (
             "На каком языке должны быть субтитры?",
             """Субтитры должны быть на английском языке. https://technovationchallenge.org/ru/submission-guidelines/?utm_source=chatgpt.com""",
-            video_id
+            "Создание видео"
         )
     ]
 
-    for question, answer, section_id in questions_answers:
-        cursor.execute("SELECT * FROM questions WHERE question_text=?", (question,))
-        if cursor.fetchone() is None:
-            cursor.execute("INSERT INTO questions (question_text, answer_text, section_id) VALUES (?, ?, ?)",
-                           (question, answer, section_id))
+    with sqlite3.connect('questions.db') as conn:
+        cursor = conn.cursor()
 
-    conn.commit()
-    conn.close()
+        # Вставка секций (уникальные)
+        for section in sections:
+            cursor.execute("INSERT OR IGNORE INTO sections (section_name) VALUES (?)", (section,))
+
+        # Получаем словарь {section_name: id}
+        cursor.execute("SELECT id, section_name FROM sections")
+        section_ids = {name: sid for sid, name in cursor.fetchall()}
+
+        # Вставка вопросов (если таких еще нет)
+        for question_text, answer_text, section in questions_answers:
+            section_id = section_ids.get(section)
+            cursor.execute("SELECT 1 FROM questions WHERE question_text = ?", (question_text,))
+            if cursor.fetchone() is None:
+                cursor.execute(
+                    "INSERT INTO questions (question_text, answer_text, section_id) VALUES (?, ?, ?)",
+                    (question_text, answer_text, section_id)
+                )
+
+        conn.commit()
 
 
 if __name__ == "__main__":
-    create_db()
+    create_database()
     insert_data()
-
-
