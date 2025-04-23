@@ -9,7 +9,7 @@ bot = telebot.TeleBot("7746129266:AAHR6xOsvcHlK50RV13fhhfsYc4Vxp-J_aI")
 def get_sections():
     conn = sqlite3.connect('questions.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name FROM sections")
+    cursor.execute("SELECT id, section_name FROM sections")
     sections = cursor.fetchall()
     conn.close()
     return sections
