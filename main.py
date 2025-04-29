@@ -99,22 +99,43 @@ def show_questions(call):
         reply_markup=markup
     )
 
+def get_answer_and_file(question_id):
+    conn = sqlite3.connect('questions.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT answer_text, file_path FROM questions WHERE id=?", (question_id,))
+    result = cursor.fetchone()
+    conn.close()
+    if result:
+        return result[0], result[1]  # answer_text, file_path
+    else:
+        return "Извините, ответа на этот вопрос пока нет.", None
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("question_"))
 def show_answer(call):
     question_id = int(call.data.split("_")[1])
-    answer = get_answer(question_id)
+    answer, file_path = get_answer_and_file(question_id)
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton(text="🔙 Назад к вопросам", callback_data=f"back_to_questions_{question_id}"))
     markup.add(InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_to_sections"))
 
+    # Сначала отправляем текст ответа
     bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
         text=answer,
         reply_markup=markup
     )
+
+    # Потом, если файл есть, отправляем файл
+    if file_path:
+        try:
+            with open(file_path, 'rb') as f:
+                bot.send_document(call.message.chat.id, f)
+        except Exception as e:
+            bot.send_message(call.message.chat.id, "⚠️ Не удалось отправить файл. Возможно, он отсутствует на сервере.")
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "back_to_sections")
